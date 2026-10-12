@@ -1,0 +1,13 @@
+private-data/*
+!private-data/구매자이메일_양식.csv
+!private-data/명단등록안내.txt
+*.tar.gz
+.env
+.tools/
+*.xls
+*.xlsx
+*.csv
+*.png
+!private-data/구매자이메일_양식.csv
+github-upload/
+github-upload.zip
