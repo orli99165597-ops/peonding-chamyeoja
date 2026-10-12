@@ -10,7 +10,7 @@ const origin=process.env.APP_ORIGIN||`http://127.0.0.1:${port}`;
 const tokens=new Map(),sessions=new Map(),limits=new Map();
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const normalize=x=>String(x||'').trim().toLowerCase();
-async function jsonFile(name,fallback){try{return JSON.parse(await readFile(path.join(root,'private-data',name),'utf8'));}catch{return fallback;}}
+async function jsonFile(name,fallback){try{const key={'buyers.json':'BUYERS_JSON','인증제외목록.json':'BUYER_EXCLUSIONS_JSON','lessons.json':'LESSONS_JSON'}[name];if(key&&process.env[key])return JSON.parse(process.env[key]);return JSON.parse(await readFile(path.join(root,'private-data',name),'utf8'));}catch{return fallback;}}
 async function buyers(){const rows=await jsonFile('buyers.json',[]);const excluded=await jsonFile('인증제외목록.json',{});return new Set(rows.filter(r=>r.status==='완료'&&!excluded.excluded_payment_numbers?.includes(String(r.payment_number))).map(r=>normalize(r.email)));}
 async function ready(){return (await buyers()).size>0&&Boolean(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)&&process.env.AUTH_ENABLED==='true';}
 function send(res,status,data,headers={}){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});res.end(JSON.stringify(data));}
@@ -65,4 +65,4 @@ try{
  const bytes=await readFile(path.join(root,'dist',file));res.writeHead(200,{'Content-Type':types[path.extname(file)]+'; charset=utf-8','Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:bytes);
 }catch{send(res,500,{message:'요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'});}
 });
-server.listen(port,'127.0.0.1',()=>console.log(`디지털 오르리 앱: ${origin}`));
+server.listen(port,process.env.HOST||'127.0.0.1',()=>console.log(`디지털 오르리 앱: ${origin}`));
